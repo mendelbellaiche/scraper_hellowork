@@ -8,11 +8,11 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlencode
 
 
 BASE_URL = "https://www.hellowork.com"
-SEARCH_URL = BASE_URL + "/fr-fr/emploi/recherche.html?k=php&l=paris"
+LOCATION = "paris"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; PersonalJobResearch/1.0)"
@@ -33,6 +33,11 @@ def setup_logger(log_file):
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
+
+
+def build_search_url(keyword):
+    query = urlencode({"k": keyword, "l": LOCATION})
+    return f"{BASE_URL}/fr-fr/emploi/recherche.html?{query}"
 
 
 def get_page(url):
@@ -140,13 +145,14 @@ def load_url_list(filename):
         return {line.strip() for line in file if line.strip()}
 
 
-def save_urls(urls, filename):
+def save_urls(urls, keyword, filename):
     existing = load_url_list(filename)
 
     with open(filename, "a", encoding="utf-8") as file:
         for url in urls:
-            if url not in existing:
-                file.write(url + "\n")
+            line = f"{url} | {keyword}"
+            if line not in existing:
+                file.write(line + "\n")
 
 
 def append_rejected_url(url, filename):
@@ -156,6 +162,12 @@ def append_rejected_url(url, filename):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Scraper d'offres HelloWork")
+    parser.add_argument(
+        "-k", "--keyword",
+        default=None,
+        help="Mot-clé de recherche (ex : php). La recherche est toujours limitée à Paris. "
+             "Si absent, il sera demandé pendant l'exécution."
+    )
     parser.add_argument(
         "--output-dir",
         default="./offres/",
@@ -174,10 +186,25 @@ def parse_args():
     return parser.parse_args()
 
 
+KEYWORD_EXAMPLES = ["php", "java", "python", "devops", "data engineer"]
+
+
+def prompt_keyword():
+    print(f"Exemples de recherche : {', '.join(KEYWORD_EXAMPLES)}")
+    while True:
+        keyword = input("Mot-clé de recherche : ").strip()
+        if keyword:
+            return keyword
+        print("Le mot-clé ne peut pas être vide.")
+
+
 def main():
     args = parse_args()
     setup_logger(args.log_file)
     os.makedirs(args.output_dir, exist_ok=True)
+
+    keyword = args.keyword or prompt_keyword()
+    search_url = build_search_url(keyword)
 
     filename = os.path.join(args.output_dir, "offres.txt")
     rejects_filename = os.path.join(args.output_dir, "rejects.txt")
@@ -192,11 +219,11 @@ def main():
         datetime.now().strftime("offres-%Y%m%d.txt")
     )
 
-    logger.info("Démarrage du scraping sur %s", SEARCH_URL)
+    logger.info("Démarrage du scraping sur %s", search_url)
 
-    job_urls = get_job_urls(SEARCH_URL)
+    job_urls = get_job_urls(search_url)
     logger.info("%d offres trouvées", len(job_urls))
-    save_urls(job_urls, urls_filename)
+    save_urls(job_urls, keyword, urls_filename)
 
     saved_urls = load_saved_urls(filename)
     rejected_urls = load_url_list(rejects_filename)
