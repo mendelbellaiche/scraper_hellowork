@@ -113,29 +113,26 @@ def get_job_urls(search_url):
     return urls
 
 
+def load_jobs(filename):
+    if not os.path.exists(filename):
+        return []
+    with open(filename, "r", encoding="utf-8") as file:
+        content = file.read().strip()
+        if not content:
+            return []
+        return json.loads(content)
+
+
 def save_job(job, filename):
+    jobs = load_jobs(filename)
+    jobs.append(job)
+    with open(filename, "w", encoding="utf-8") as file:
+        json.dump(jobs, file, ensure_ascii=False, indent=2)
+
+
+def append_imported_url(url, filename):
     with open(filename, "a", encoding="utf-8") as file:
-
-        file.write("="*80 +"\n")
-
-        file.write(f"TITRE: {job['titre']}\n")
-        file.write(f"ENTREPRISE: {job['entreprise']}\n")
-        file.write(f"SALAIRE: {job['salaire']}\n")
-        file.write(f"URL: {job['url']}\n")
-        file.write(f"DATE RECUPERATION: {job['date_recuperation']}\n")
-        file.write("\nDESCRIPTION:\n")
-        file.write(job["description"])
-        file.write("\n\n")
-
-
-def load_saved_urls(filename):
-    urls = set()
-    if os.path.exists(filename):
-        with open(filename, "r", encoding="utf-8") as file:
-            for line in file:
-                if line.startswith("URL: "):
-                    urls.add(line[len("URL: "):].strip())
-    return urls
+        file.write(url + "\n")
 
 
 def load_url_list(filename):
@@ -176,7 +173,7 @@ def parse_args():
     parser.add_argument(
         "--reset",
         action="store_true",
-        help="Réinitialise le fichier offres.txt avant de lancer le scraping"
+        help="Réinitialise le fichier offres.json avant de lancer le scraping"
     )
     parser.add_argument(
         "--log-file",
@@ -206,13 +203,16 @@ def main():
     keyword = args.keyword or prompt_keyword()
     search_url = build_search_url(keyword)
 
-    filename = os.path.join(args.output_dir, "offres.txt")
+    filename = os.path.join(args.output_dir, "offres.json")
     rejects_filename = os.path.join(args.output_dir, "rejects.txt")
+    imported_filename = os.path.join(args.output_dir, "imported.txt")
     if args.reset:
         if os.path.exists(filename):
             os.remove(filename)
         if os.path.exists(rejects_filename):
             os.remove(rejects_filename)
+        if os.path.exists(imported_filename):
+            os.remove(imported_filename)
 
     urls_filename = os.path.join(
         args.output_dir,
@@ -225,7 +225,7 @@ def main():
     logger.info("%d offres trouvées", len(job_urls))
     save_urls(job_urls, keyword, urls_filename)
 
-    saved_urls = load_saved_urls(filename)
+    saved_urls = load_url_list(imported_filename)
     rejected_urls = load_url_list(rejects_filename)
     new_urls = []
     for url in job_urls:
@@ -251,6 +251,7 @@ def main():
                 append_rejected_url(url, rejects_filename)
             else:
                 save_job(job, filename)
+                append_imported_url(url, imported_filename)
                 logger.info("Offre enregistrée : %s", url)
 
             time.sleep(2)
