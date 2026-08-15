@@ -109,11 +109,11 @@ Le fichier de log (`--log-file`, `scraper.log` par défaut) trace le déroulemen
 Pour scraper les offres puis envoyer l'email automatiquement chaque jour, ajouter les lignes suivantes à la crontab (`crontab -e`) :
 
 ```
-30 23 * * * /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/main.py -k react -k angular -k php -k python -k java --reset offres --output-dir /opt/applications/scrapper_hellowork/offres/ >> /opt/applications/scrapper_hellowork/cron.log 2>&1
+55 9 * * * /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/main.py -k react -k angular -k php -k python -k java --reset offres --output-dir /opt/applications/scrapper_hellowork/offres/ >> /opt/applications/scrapper_hellowork/cron.log 2>&1
 
-35 23 * * * cd /opt/applications/scrapper_hellowork && /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/send_email.py --file /opt/applications/scrapper_hellowork/offres/offres.json >> /opt/applications/scrapper_hellowork/cron.log 2>&1
+0 10 * * * cd /opt/applications/scrapper_hellowork && /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/send_email.py --file /opt/applications/scrapper_hellowork/offres/offres.json >> /opt/applications/scrapper_hellowork/cron.log 2>&1
 ```
 
-- La première ligne lance le scraping tous les jours à 23h30 avec le python du `.venv` du projet.
-- La seconde ligne envoie l'email 5 minutes plus tard (23h35), le temps que le scraping se termine ; le `cd` avant la commande est nécessaire pour que `send_email.py` retrouve le fichier `.env` (variables `GMAIL_ADDRESS` et `GMAIL_APP_PASSWORD`).
+- La première ligne lance le scraping tous les jours à 9h55 avec le python du `.venv` du projet.
+- La seconde ligne envoie l'email 5 minutes plus tard (10h00), le temps que le scraping se termine ; le `cd` avant la commande est nécessaire pour que `send_email.py` retrouve le fichier `.env` (variables `GMAIL_ADDRESS` et `GMAIL_APP_PASSWORD`).
 - Adapter les chemins (`/opt/applications/scrapper_hellowork`) à l'emplacement réel du projet sur le serveur.
