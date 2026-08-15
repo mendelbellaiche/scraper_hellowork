@@ -66,7 +66,7 @@ def build_html_body(jobs):
               <div style="font-size:14px;color:#4a4f5a;margin-bottom:12px;">
                 {entreprise} &nbsp;•&nbsp; <span style="color:#0a7a3d;font-weight:600;">{salaire}</span>
               </div>
-              <div style="font-size:13px;line-height:1.6;color:#5c6270;max-height:180px;overflow:hidden;margin-bottom:14px;">
+              <div style="font-size:13px;line-height:1.6;color:#5c6270;margin-bottom:14px;">
                 {description}
               </div>
               <a href="{url}"
