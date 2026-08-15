@@ -7,7 +7,7 @@ Scraper Python qui récupère les offres d'emploi correspondant à une recherche
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install requests beautifulsoup4
+pip install requests beautifulsoup4 dotenv
 ```
 
 ## Utilisation
