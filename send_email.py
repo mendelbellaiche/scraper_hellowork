@@ -160,7 +160,8 @@ def main():
 
     jobs = load_jobs(args.file)
 
-    send_email(sender, password, recipient, args.subject, jobs)
+    subject = args.subject if jobs else f"{args.subject} - Aucune nouvelle offre"
+    send_email(sender, password, recipient, subject, jobs)
     print(f"Email envoyé à {recipient} ({len(jobs)} offre(s))")
 
 
