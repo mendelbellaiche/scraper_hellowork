@@ -161,8 +161,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Scraper d'offres HelloWork")
     parser.add_argument(
         "-k", "--keyword",
+        action="append",
         default=None,
-        help="Mot-clé de recherche (ex : php). La recherche est toujours limitée à Paris. "
+        help="Mot-clé de recherche (ex : php). Peut être répété pour rechercher plusieurs "
+             "mots-clés (ex : -k php -k java). La recherche est toujours limitée à Paris. "
              "Si absent, il sera demandé pendant l'exécution."
     )
     parser.add_argument(
@@ -172,8 +174,13 @@ def parse_args():
     )
     parser.add_argument(
         "--reset",
-        action="store_true",
-        help="Réinitialise le fichier offres.json avant de lancer le scraping"
+        nargs="?",
+        const="offres",
+        default=None,
+        choices=["offres", "all"],
+        help="Réinitialise le fichier offres.json avant de lancer le scraping. "
+             "Utiliser --reset all pour supprimer aussi rejects.txt et imported.txt "
+             "(défaut si l'option est présente sans valeur : offres.json uniquement)"
     )
     parser.add_argument(
         "--log-file",
@@ -200,8 +207,7 @@ def main():
     setup_logger(args.log_file)
     os.makedirs(args.output_dir, exist_ok=True)
 
-    keyword = args.keyword or prompt_keyword()
-    search_url = build_search_url(keyword)
+    keywords = args.keyword or [prompt_keyword()]
 
     filename = os.path.join(args.output_dir, "offres.json")
     rejects_filename = os.path.join(args.output_dir, "rejects.txt")
@@ -209,21 +215,29 @@ def main():
     if args.reset:
         if os.path.exists(filename):
             os.remove(filename)
-        if os.path.exists(rejects_filename):
-            os.remove(rejects_filename)
-        if os.path.exists(imported_filename):
-            os.remove(imported_filename)
+        if args.reset == "all":
+            if os.path.exists(rejects_filename):
+                os.remove(rejects_filename)
+            if os.path.exists(imported_filename):
+                os.remove(imported_filename)
 
     urls_filename = os.path.join(
         args.output_dir,
         datetime.now().strftime("offres-%Y%m%d.txt")
     )
 
-    logger.info("Démarrage du scraping sur %s", search_url)
+    job_urls = []
+    for keyword in keywords:
+        search_url = build_search_url(keyword)
+        logger.info("Démarrage du scraping sur %s", search_url)
 
-    job_urls = get_job_urls(search_url)
-    logger.info("%d offres trouvées", len(job_urls))
-    save_urls(job_urls, keyword, urls_filename)
+        keyword_urls = get_job_urls(search_url)
+        logger.info("%d offres trouvées pour '%s'", len(keyword_urls), keyword)
+        save_urls(keyword_urls, keyword, urls_filename)
+
+        for url in keyword_urls:
+            if url not in job_urls:
+                job_urls.append(url)
 
     saved_urls = load_url_list(imported_filename)
     rejected_urls = load_url_list(rejects_filename)

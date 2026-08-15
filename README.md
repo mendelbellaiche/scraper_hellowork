@@ -36,14 +36,17 @@ Scraper d'offres HelloWork
 options:
   -h, --help            show this help message and exit
   -k, --keyword KEYWORD
-                        Mot-clé de recherche (ex : php). La recherche est
-                        toujours limitée à Paris. Si absent, il sera demandé
-                        pendant l'exécution.
+                        Mot-clé de recherche (ex : php). Peut être répété
+                        pour rechercher plusieurs mots-clés (ex : -k php
+                        -k java). La recherche est toujours limitée à
+                        Paris. Si absent, il sera demandé pendant
+                        l'exécution.
   --output-dir OUTPUT_DIR
                         Dossier de destination des fichiers d'offres (défaut :
                         ./offres/)
-  --reset               Réinitialise le fichier offres.txt avant de lancer le
-                        scraping
+  --reset               Réinitialise uniquement le fichier offres.json avant
+                        de lancer le scraping (rejects.txt et imported.txt
+                        sont conservés)
   --log-file LOG_FILE   Chemin du fichier de log (défaut : scraper.log)
 ```
 
@@ -61,7 +64,13 @@ Rechercher un autre mot-clé (ex : devops) :
 python3 main.py --keyword devops
 ```
 
-Réinitialiser `offres.txt` et `rejects.txt` avant de relancer le scraping :
+Rechercher plusieurs mots-clés en une seule exécution (`-k` peut être répété) :
+
+```bash
+python3 main.py -k php -k java -k devops
+```
+
+Réinitialiser uniquement `offres.json` avant de relancer le scraping (`rejects.txt` et `imported.txt` sont conservés, donc les offres déjà vues ne sont pas re-scrapées) :
 
 ```bash
 python3 main.py -k php --reset
