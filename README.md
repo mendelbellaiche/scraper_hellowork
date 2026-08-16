@@ -5,9 +5,11 @@ Scraper Python qui récupère les offres d'emploi correspondant à une recherche
 ## Prérequis
 
 ```bash
-sudo mkdir /opt/applications
-sudo mv scrapper_hellowork /opt/applications
+(sudo) mkdir /opt/applications
+(sudo) mv scrapper_hellowork /opt/applications
 cd /opt/applications/scrapper_hellowork
+
+(sudo) mkdir logs
 
 (sudo) apt install python3.12-venv
 (sudo) apt install python3-pip
@@ -119,7 +121,7 @@ Le fichier de log (`--log-file`, `scraper.log` par défaut) trace le déroulemen
 Pour scraper les offres puis envoyer l'email automatiquement chaque jour, ajouter les lignes suivantes à la crontab (`crontab -e`) :
 
 ```
-55 9 * * * /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/main.py -k react -k angular -k php -k python -k java --reset offres --output-dir /opt/applications/scrapper_hellowork/offres/ >> /opt/applications/scrapper_hellowork/cron.log 2>&1
+55 9 * * * /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/main.py -k react -k angular -k php -k python -k java --reset offres --log-file /opt/applications/scrapper_hellowork/logs/scraper.log --output-dir /opt/applications/scrapper_hellowork/offres/ >> /opt/applications/scrapper_hellowork/cron.log 2>&1
 
 0 10 * * * cd /opt/applications/scrapper_hellowork && /opt/applications/scrapper_hellowork/.venv/bin/python3 /opt/applications/scrapper_hellowork/send_email.py --file /opt/applications/scrapper_hellowork/offres/offres.json >> /opt/applications/scrapper_hellowork/cron.log 2>&1
 ```
