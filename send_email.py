@@ -32,6 +32,7 @@ def build_text_body(jobs):
                 f"TITRE: {job.get('titre', '')}",
                 f"ENTREPRISE: {job.get('entreprise', '')}",
                 f"SALAIRE: {job.get('salaire', '')}",
+                f"RECHERCHE(S): {', '.join(job.get('mots_cles', []) or [])}",
                 f"URL: {job.get('url', '')}",
                 f"DATE RECUPERATION: {job.get('date_recuperation', '')}",
                 "",
@@ -51,6 +52,7 @@ def build_html_body(jobs):
         titre = html.escape(job.get("titre", "") or "Sans titre")
         entreprise = html.escape(job.get("entreprise", "") or "—")
         salaire = html.escape(job.get("salaire", "") or "Non précisé")
+        mots_cles = html.escape(", ".join(job.get("mots_cles", []) or []))
         url = html.escape(job.get("url", ""))
         date = html.escape(job.get("date_recuperation", ""))
         description = html.escape(job.get("description", "")).replace("\n", "<br>")
@@ -65,6 +67,9 @@ def build_html_body(jobs):
               </div>
               <div style="font-size:14px;color:#4a4f5a;margin-bottom:12px;">
                 {entreprise} &nbsp;•&nbsp; <span style="color:#0a7a3d;font-weight:600;">{salaire}</span>
+              </div>
+              <div style="font-size:11px;color:#6a70ff;font-weight:600;margin-bottom:12px;text-transform:uppercase;">
+                Recherche(s) : {mots_cles or "—"}
               </div>
               <div style="font-size:13px;line-height:1.6;color:#5c6270;margin-bottom:14px;">
                 {description}

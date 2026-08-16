@@ -76,7 +76,7 @@ def format_salary(base_salary):
     return " ".join(p for p in [amount, currency, f"/ {unit}" if unit else ""] if p).strip()
 
 
-def extract_job(url):
+def extract_job(url, keywords):
     soup = get_page(url)
     title = soup.select_one('[data-cy="jobTitle"]')
 
@@ -94,6 +94,7 @@ def extract_job(url):
         "salaire": salary,
         "description": description,
         "url": url,
+        "mots_cles": keywords,
         "date_recuperation": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
@@ -227,6 +228,7 @@ def main():
     )
 
     job_urls = []
+    url_keywords = {}
     for keyword in keywords:
         search_url = build_search_url(keyword)
         logger.info("Démarrage du scraping sur %s", search_url)
@@ -238,6 +240,7 @@ def main():
         for url in keyword_urls:
             if url not in job_urls:
                 job_urls.append(url)
+            url_keywords.setdefault(url, []).append(keyword)
 
     saved_urls = load_url_list(imported_filename)
     rejected_urls = load_url_list(rejects_filename)
@@ -258,7 +261,7 @@ def main():
     for url in new_urls:
         try:
             logger.info("Récupération : %s", url)
-            job = extract_job(url)
+            job = extract_job(url, url_keywords.get(url, []))
 
             if "alternance" in job["titre"].lower():
                 logger.info("Offre en alternance rejetée : %s (%s)", url, job["titre"])
