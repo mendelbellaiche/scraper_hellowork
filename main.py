@@ -266,6 +266,9 @@ def main():
             if "alternance" in job["titre"].lower():
                 logger.info("Offre en alternance rejetée : %s (%s)", url, job["titre"])
                 append_rejected_url(url, rejects_filename)
+            elif "freelance" in job["titre"].lower():
+                logger.info("Offre freelance rejetée : %s (%s)", url, job["titre"])
+                append_rejected_url(url, rejects_filename)
             else:
                 save_job(job, filename)
                 append_imported_url(url, imported_filename)
