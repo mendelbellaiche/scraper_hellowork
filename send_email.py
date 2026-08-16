@@ -5,12 +5,38 @@ import html
 import json
 import os
 import smtplib
+from datetime import datetime, timezone
 from email.message import EmailMessage
 
 from dotenv import load_dotenv
 
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 465
+
+
+def format_elapsed(date_publication):
+    if not date_publication:
+        return ""
+    try:
+        published = datetime.fromisoformat(date_publication.replace("Z", "+00:00"))
+    except ValueError:
+        return ""
+
+    now = datetime.now(timezone.utc)
+    if published.tzinfo is None:
+        published = published.replace(tzinfo=timezone.utc)
+
+    delta = now - published
+    seconds = delta.total_seconds()
+
+    if seconds < 3600:
+        minutes = max(int(seconds // 60), 0)
+        return f"il y a {minutes} min" if minutes else "à l'instant"
+    if seconds < 86400:
+        hours = int(seconds // 3600)
+        return f"il y a {hours} h"
+    days = int(seconds // 86400)
+    return f"il y a {days} j" if days > 1 else "il y a 1 j"
 
 
 def load_jobs(filename):
@@ -33,6 +59,8 @@ def build_text_body(jobs):
                 f"ENTREPRISE: {job.get('entreprise', '')}",
                 f"SALAIRE: {job.get('salaire', '')}",
                 f"RECHERCHE(S): {', '.join(job.get('mots_cles', []) or [])}",
+                f"PUBLIÉE: {job.get('date_publication', '') or 'inconnue'}"
+                + (f" ({format_elapsed(job.get('date_publication'))})" if job.get('date_publication') else ""),
                 f"URL: {job.get('url', '')}",
                 f"DATE RECUPERATION: {job.get('date_recuperation', '')}",
                 "",
@@ -53,6 +81,7 @@ def build_html_body(jobs):
         entreprise = html.escape(job.get("entreprise", "") or "—")
         salaire = html.escape(job.get("salaire", "") or "Non précisé")
         mots_cles = html.escape(", ".join(job.get("mots_cles", []) or []))
+        elapsed = html.escape(format_elapsed(job.get("date_publication")))
         url = html.escape(job.get("url", ""))
         date = html.escape(job.get("date_recuperation", ""))
         description = html.escape(job.get("description", "")).replace("\n", "<br>")
@@ -70,6 +99,7 @@ def build_html_body(jobs):
               </div>
               <div style="font-size:11px;color:#6a70ff;font-weight:600;margin-bottom:12px;text-transform:uppercase;">
                 Recherche(s) : {mots_cles or "—"}
+                {f" &nbsp;•&nbsp; Publiée {elapsed}" if elapsed else ""}
               </div>
               <div style="font-size:13px;line-height:1.6;color:#5c6270;margin-bottom:14px;">
                 {description}

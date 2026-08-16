@@ -36,7 +36,7 @@ def setup_logger(log_file):
 
 
 def build_search_url(keyword):
-    query = urlencode({"k": keyword, "l": LOCATION})
+    query = urlencode({"k": keyword, "l": LOCATION, "st": "date"})
     return f"{BASE_URL}/fr-fr/emploi/recherche.html?{query}"
 
 
@@ -95,6 +95,7 @@ def extract_job(url, keywords):
         "description": description,
         "url": url,
         "mots_cles": keywords,
+        "date_publication": job_data.get("datePosted", ""),
         "date_recuperation": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
