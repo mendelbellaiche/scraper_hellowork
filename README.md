@@ -5,9 +5,18 @@ Scraper Python qui récupère les offres d'emploi correspondant à une recherche
 ## Prérequis
 
 ```bash
+sudo mkdir /opt/applications
+sudo mv scrapper_hellowork /opt/applications
+cd /opt/applications/scrapper_hellowork
+
+(sudo) apt install python3.12-venv
+(sudo) apt install python3-pip
+
 python3 -m venv .venv
 source .venv/bin/activate
-pip install requests beautifulsoup4 dotenv
+pip install requests 
+pip install beautifulsoup4 
+pip install dotenv
 ```
 
 ## Utilisation
@@ -99,6 +108,7 @@ python3 main.py -k php --output-dir ./mes_offres --log-file ./mes_offres/scraper
 Dans le dossier de sortie (`--output-dir`, `./offres/` par défaut) :
 
 - `offres.txt` — fichier général contenant le détail de toutes les offres récupérées (titre, entreprise, salaire, description, URL, date de récupération). Les offres déjà présentes ne sont jamais dupliquées.
+- `imported.txt` - URLs des offres importées dans offres.txt, pour ne pas les rescanner aux exécutions suivantes.
 - `rejects.txt` — URLs des offres rejetées (ex : alternance), pour ne pas les rescanner aux exécutions suivantes.
 - `offres-YYYYMMDD.txt` — liste des URLs d'offres trouvées le jour de l'exécution, au format `<url> | <mot-clé>`.
 
