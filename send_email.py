@@ -201,5 +201,6 @@ def main():
     send_email(sender, password, recipient, subject, jobs)
     print(f"Email envoyé à {recipient} ({len(jobs)} offre(s))")
 
+
 if __name__ == "__main__":
     main()
